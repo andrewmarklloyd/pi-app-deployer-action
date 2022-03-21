@@ -121,7 +121,8 @@ func waitForSuccessfulDeploy(apiKey string, artifact Artifact) error {
 			return fmt.Errorf("Receieved a non successful status '%s' while getting deploy status", status)
 		}
 
-		fmt.Println("Deploy condition:", status.Condition)
+		condition = status.Condition
+		fmt.Println("Deploy condition:", condition)
 		count += 1
 		time.Sleep(5 * time.Second)
 	}
