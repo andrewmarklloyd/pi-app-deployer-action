@@ -15,5 +15,7 @@ runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
-    - "--repoName ${{ inputs.repoName }}"
-    - "--manifestName ${{ inputs.manifestName }}"
+    - --repoName
+    - ${{ inputs.repoName }}
+    - --manifestName
+    - ${{ inputs.manifestName }}
