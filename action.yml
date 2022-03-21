@@ -2,3 +2,21 @@ name: My Action
 runs:
   using: docker
   image: Dockerfile
+inputs:
+  repoName:
+    description: 'Name of the Github repo including the org/user name'
+    required: true
+  manifestName:
+    description: 'Name of the manifest to deploy. Should be listed in .pi-app-updater.yaml'
+    required: true
+outputs:
+  status:
+    description: 'Status of the deploy operation'
+  error:
+    description: 'Any errors occurred during the deploy operation. Will be null if no status is successful'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - --repoName ${{ inputs.repoName }}
+    - --manifestName ${{ inputs.manifestName }}
