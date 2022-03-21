@@ -21,6 +21,7 @@ type Artifact struct {
 type DeployStatus struct {
 	Status    string `json:"status"`
 	Condition string `json:"condition"`
+	Error     string `json:"error"`
 }
 
 func main() {
@@ -128,15 +129,15 @@ func waitForSuccessfulDeploy(apiKey string, artifact Artifact) error {
 }
 
 func checkDeployStatus(apiKey string, artifact Artifact) (DeployStatus, error) {
-	var deployStatus DeployStatus
+	var deployStatus *DeployStatus
 	j, err := json.Marshal(artifact)
 	if err != nil {
-		return deployStatus, err
+		return *deployStatus, err
 	}
 
 	req, err := http.NewRequest("GET", "https://pi-app-deployer.herokuapp.com/deploy/status", bytes.NewBuffer(j))
 	if err != nil {
-		return deployStatus, err
+		return *deployStatus, err
 	}
 
 	req.Header.Set("Content-Type", "application/json; charset=UTF-8")
@@ -145,19 +146,17 @@ func checkDeployStatus(apiKey string, artifact Artifact) (DeployStatus, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return deployStatus, err
+		return *deployStatus, err
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return deployStatus, err
+		return *deployStatus, err
 	}
 	defer resp.Body.Close()
 
-	fmt.Println(string(body))
-
 	err = json.Unmarshal(body, deployStatus)
 	if err != nil {
-		return deployStatus, nil
+		return *deployStatus, nil
 	}
-	return deployStatus, nil
+	return *deployStatus, nil
 }
