@@ -89,13 +89,13 @@ func triggerDeploy(apiKey string, artifact Artifact) error {
 	if err != nil {
 		return err
 	}
-	body, err := ioutil.ReadAll(resp.Body)
+	_, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
-	fmt.Println(string(body))
+	// TODO: check status fmt.Println(string(body))
 	return nil
 }
 
@@ -120,8 +120,8 @@ func waitForSuccessfulDeploy(apiKey string, artifact Artifact) error {
 		if status.Status != "success" {
 			return fmt.Errorf("Receieved a non successful status '%s' while getting deploy status", status)
 		}
-		// status.condition
-		fmt.Println("Deploy condition: ", "status.condition")
+
+		fmt.Println("Deploy condition:", status.Condition)
 		count += 1
 		time.Sleep(5 * time.Second)
 	}
@@ -129,15 +129,14 @@ func waitForSuccessfulDeploy(apiKey string, artifact Artifact) error {
 }
 
 func checkDeployStatus(apiKey string, artifact Artifact) (DeployStatus, error) {
-	var deployStatus *DeployStatus
 	j, err := json.Marshal(artifact)
 	if err != nil {
-		return *deployStatus, err
+		return DeployStatus{}, err
 	}
 
 	req, err := http.NewRequest("GET", "https://pi-app-deployer.herokuapp.com/deploy/status", bytes.NewBuffer(j))
 	if err != nil {
-		return *deployStatus, err
+		return DeployStatus{}, err
 	}
 
 	req.Header.Set("Content-Type", "application/json; charset=UTF-8")
@@ -146,17 +145,19 @@ func checkDeployStatus(apiKey string, artifact Artifact) (DeployStatus, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return *deployStatus, err
+		return DeployStatus{}, err
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return *deployStatus, err
+		return DeployStatus{}, err
 	}
 	defer resp.Body.Close()
 
-	err = json.Unmarshal(body, deployStatus)
+	deployStatus := DeployStatus{}
+	err = json.Unmarshal(body, &deployStatus)
 	if err != nil {
-		return *deployStatus, nil
+		return DeployStatus{}, err
 	}
-	return *deployStatus, nil
+
+	return deployStatus, nil
 }
