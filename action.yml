@@ -6,11 +6,6 @@ inputs:
   manifestName:
     description: 'Name of the manifest to deploy. Should be listed in .pi-app-updater.yaml'
     required: true
-outputs:
-  status:
-    description: 'Status of the deploy operation'
-  error:
-    description: 'Any errors occurred during the deploy operation. Will be null if no status is successful'
 runs:
   using: 'docker'
   image: 'Dockerfile'

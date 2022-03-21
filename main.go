@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 )
 
 type Artifact struct {
@@ -15,6 +16,11 @@ type Artifact struct {
 	ManifestName string `json:"manifestName"`
 	SHA          string `json:"sha"`
 	Name         string `json:"name"`
+}
+
+type DeployStatus struct {
+	Status    string `json:"status"`
+	Condition string `json:"condition"`
 }
 
 func main() {
@@ -50,12 +56,18 @@ func main() {
 		Name:         fmt.Sprintf("app_%s", githubSha),
 		ManifestName: *manifestName,
 	}
-	fmt.Println(artifact)
-	// err := triggerDeploy(apiKey, payload)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	os.Exit(1)
-	// }
+
+	err := triggerDeploy(apiKey, artifact)
+	if err != nil {
+		fmt.Println("Error triggering deploy:", err)
+		os.Exit(1)
+	}
+
+	err = waitForSuccessfulDeploy(apiKey, artifact)
+	if err != nil {
+		fmt.Println("Error checking deploy status:", err)
+		os.Exit(1)
+	}
 }
 
 func triggerDeploy(apiKey string, artifact Artifact) error {
@@ -86,15 +98,64 @@ func triggerDeploy(apiKey string, artifact Artifact) error {
 	return nil
 }
 
-/*
+func waitForSuccessfulDeploy(apiKey string, artifact Artifact) error {
+	max := 24
+	count := 0
+	condition := "UNKNOWN"
+	for {
+		if count >= max {
+			return fmt.Errorf("Max number of retries exceeded. Deploy condition: %s", condition)
+		}
+		if condition == "SUCCESS" {
+			break
+		}
 
-get inputs:
-	PI_APP_DEPLOYER_API_KEY
-	GITHUB_SHA
-	optional timeout
-pass payload to api
-	https://pi-app-deployer.herokuapp.com/push
-if status is not success fail
-while not timeout
-	curl deploy/status, check for success
-*/
+		fmt.Println(fmt.Sprintf("Attempt number %d", count))
+		status, err := checkDeployStatus(apiKey, artifact)
+		if err != nil {
+			return err
+		}
+
+		if status.Status != "success" {
+			return fmt.Errorf("Receieved a non successful status '%s' while getting deploy status", status)
+		}
+		// status.condition
+		fmt.Println("Deploy condition: ", "status.condition")
+		count += 1
+		time.Sleep(5 * time.Second)
+	}
+	return nil
+}
+
+func checkDeployStatus(apiKey string, artifact Artifact) (DeployStatus, error) {
+	var deployStatus DeployStatus
+	j, err := json.Marshal(artifact)
+	if err != nil {
+		return deployStatus, err
+	}
+
+	req, err := http.NewRequest("GET", "https://pi-app-deployer.herokuapp.com/deploy/status", bytes.NewBuffer(j))
+	if err != nil {
+		return deployStatus, err
+	}
+
+	req.Header.Set("Content-Type", "application/json; charset=UTF-8")
+	req.Header.Add("api-key", apiKey)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return deployStatus, err
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return deployStatus, err
+	}
+	defer resp.Body.Close()
+
+	err = json.Unmarshal(body, deployStatus)
+	if err != nil {
+		return deployStatus, nil
+	}
+	return deployStatus, nil
+}
