@@ -1,7 +1,4 @@
 name: My Action
-runs:
-  using: docker
-  image: Dockerfile
 inputs:
   repoName:
     description: 'Name of the Github repo including the org/user name'
