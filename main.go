@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -29,13 +30,25 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println(os.Args)
+	repoName := flag.String("repoName", "", "Name of the Github repo including the owner")
+	manifestName := flag.String("manifestName", "", "Name of the pi-app-deployer manifest")
+	flag.Parse()
+
+	if *repoName == "" {
+		fmt.Println("repoName is required")
+		os.Exit(1)
+	}
+
+	if *manifestName == "" {
+		fmt.Println("manifestName is required")
+		os.Exit(1)
+	}
 
 	artifact := Artifact{
 		SHA:          githubSha,
-		RepoName:     "",
+		RepoName:     *repoName,
 		Name:         fmt.Sprintf("app_%s", githubSha),
-		ManifestName: "",
+		ManifestName: *manifestName,
 	}
 	fmt.Println(artifact)
 	// err := triggerDeploy(apiKey, payload)
