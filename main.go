@@ -153,6 +153,8 @@ func checkDeployStatus(apiKey string, artifact Artifact) (DeployStatus, error) {
 	}
 	defer resp.Body.Close()
 
+	fmt.Println(string(body))
+
 	err = json.Unmarshal(body, deployStatus)
 	if err != nil {
 		return deployStatus, nil
