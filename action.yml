@@ -10,6 +10,7 @@ runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
+    - deploy
     - --repoName
     - ${{ inputs.repoName }}
     - --manifestName
