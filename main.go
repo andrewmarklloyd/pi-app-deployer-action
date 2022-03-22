@@ -113,6 +113,7 @@ func waitForSuccessfulDeploy(apiKey string, artifact Artifact) error {
 
 		fmt.Println(fmt.Sprintf("Attempt number %d", count))
 		status, err := checkDeployStatus(apiKey, artifact)
+		fmt.Println("checkDeployStatus return:", status, err)
 		if err != nil {
 			return err
 		}
