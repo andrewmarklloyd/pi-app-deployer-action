@@ -6,6 +6,9 @@ inputs:
   manifestName:
     description: 'Name of the manifest to deploy. Should be listed in .pi-app-updater.yaml'
     required: true
+  host:
+    description: 'Host containing protocol for the Pi App Deployer'
+    required: true
 runs:
   using: 'docker'
   image: 'Dockerfile'
@@ -15,3 +18,5 @@ runs:
     - ${{ inputs.repoName }}
     - --manifestName
     - ${{ inputs.manifestName }}
+    - --host
+    - ${{ inputs.host }}
