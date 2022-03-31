@@ -11,12 +11,12 @@ import (
 	"github.com/andrewmarklloyd/pi-app-deployer-action/internal/pkg/config"
 )
 
-func TriggerDeploy(apiKey string, artifact config.Artifact) error {
+func TriggerDeploy(apiKey, host string, artifact config.Artifact) error {
 	j, err := json.Marshal(artifact)
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequest("POST", "https://pi-app-deployer.herokuapp.com/push", bytes.NewBuffer(j))
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/push", host), bytes.NewBuffer(j))
 
 	if err != nil {
 		return err
@@ -47,7 +47,7 @@ func TriggerDeploy(apiKey string, artifact config.Artifact) error {
 	return nil
 }
 
-func WaitForSuccessfulDeploy(apiKey string, artifact config.Artifact) error {
+func WaitForSuccessfulDeploy(apiKey, host string, artifact config.Artifact) error {
 	max := 24
 	count := 0
 	condition := "UNKNOWN"
@@ -60,7 +60,7 @@ func WaitForSuccessfulDeploy(apiKey string, artifact config.Artifact) error {
 		}
 
 		fmt.Println(fmt.Sprintf("Attempt number %d", count))
-		status, err := CheckDeployStatus(apiKey, artifact)
+		status, err := CheckDeployStatus(apiKey, host, artifact)
 		if err != nil {
 			return err
 		}
@@ -77,14 +77,14 @@ func WaitForSuccessfulDeploy(apiKey string, artifact config.Artifact) error {
 	return nil
 }
 
-func CheckDeployStatus(apiKey string, artifact config.Artifact) (config.DeployStatus, error) {
+func CheckDeployStatus(apiKey, host string, artifact config.Artifact) (config.DeployStatus, error) {
 	deployStatus := config.DeployStatus{}
 	j, err := json.Marshal(artifact)
 	if err != nil {
 		return deployStatus, err
 	}
 
-	req, err := http.NewRequest("GET", "https://pi-app-deployer.herokuapp.com/deploy/status", bytes.NewBuffer(j))
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/deploy/status", host), bytes.NewBuffer(j))
 	if err != nil {
 		return deployStatus, err
 	}

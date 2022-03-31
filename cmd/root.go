@@ -18,11 +18,13 @@ var rootCmd = &cobra.Command{
 
 func Execute() {
 	cobra.CheckErr(rootCmd.Execute())
+	// TODO: exit 1 if no sub command ran?
 }
 
 func init() {
 	rootCmd.PersistentFlags().String("repoName", "", "Name of the Github repo including the owner")
 	rootCmd.PersistentFlags().String("manifestName", "", "Name of the pi-app-deployer manifest")
+	rootCmd.PersistentFlags().String("host", "", "Name of the pi-app-deployer host")
 }
 
 // TODO: is there a better way to get env vars but not expose them in the flag error output?

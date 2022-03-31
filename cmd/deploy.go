@@ -44,6 +44,16 @@ func runDeploy(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	host, err := cmd.Flags().GetString("host")
+	if err != nil {
+		fmt.Println("error getting host flag", err)
+		os.Exit(1)
+	}
+	if host == "" {
+		fmt.Println("host flag is required")
+		os.Exit(1)
+	}
+
 	artifact := config.Artifact{
 		SHA:          envVarConfig.GithubSHA,
 		RepoName:     repoName,
@@ -51,14 +61,14 @@ func runDeploy(cmd *cobra.Command, args []string) {
 		ManifestName: manifestName,
 	}
 
-	err = deployer.TriggerDeploy(envVarConfig.APIKey, artifact)
+	err = deployer.TriggerDeploy(envVarConfig.APIKey, host, artifact)
 	if err != nil {
 		fmt.Println("Error triggering deploy:", err)
 		os.Exit(1)
 	}
 	fmt.Println("Successfully triggered deploy, waiting for successful deployment.")
 
-	err = deployer.WaitForSuccessfulDeploy(envVarConfig.APIKey, artifact)
+	err = deployer.WaitForSuccessfulDeploy(envVarConfig.APIKey, host, artifact)
 	if err != nil {
 		fmt.Println("Error checking deploy status:", err)
 		os.Exit(1)
