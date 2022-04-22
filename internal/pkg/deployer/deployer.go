@@ -66,10 +66,6 @@ func WaitForSuccessfulDeploy(apiKey, host string, artifact config.Artifact) erro
 			return err
 		}
 
-		if cond.Status != "success" {
-			return fmt.Errorf("Receieved a non successful status '%s' while getting deploy status. Error: %s", cond.Status, cond.Error)
-		}
-
 		status = cond.Status
 		fmt.Println("Deploy status:", status)
 		count += 1
