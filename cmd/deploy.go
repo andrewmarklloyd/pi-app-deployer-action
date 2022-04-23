@@ -73,4 +73,6 @@ func runDeploy(cmd *cobra.Command, args []string) {
 		fmt.Println("Error checking deploy status:", err)
 		os.Exit(1)
 	}
+
+	fmt.Println("Successful deployments on all agents")
 }

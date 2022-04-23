@@ -51,39 +51,40 @@ func TriggerDeploy(apiKey, host string, artifact config.Artifact) error {
 func WaitForSuccessfulDeploy(apiKey, host string, artifact config.Artifact) error {
 	max := 24
 	count := 0
-	status := "UNKNOWN"
+	success := false
 	for {
-		if count >= max {
-			return fmt.Errorf("Max number of retries exceeded. Deploy status: %s", status)
-		}
-		if status == "SUCCESS" {
+		if success {
 			break
 		}
 
 		fmt.Println(fmt.Sprintf("Attempt number %d", count))
-		cond, err := CheckDeployCondition(apiKey, host, artifact)
+		c, err := CheckDeployCondition(apiKey, host, artifact)
 		if err != nil {
 			return err
 		}
 
-		status = cond.Status
-		fmt.Println("Deploy status:", status)
+		success = isSuccessful(c)
+
 		count += 1
 		time.Sleep(5 * time.Second)
+		if count >= max {
+			j, _ := json.Marshal(c)
+			return fmt.Errorf("Max number of retries exceeded. Deploy conditions from server: %s", j)
+		}
 	}
 	return nil
 }
 
-func CheckDeployCondition(apiKey, host string, artifact config.Artifact) (status.UpdateCondition, error) {
-	cond := status.UpdateCondition{}
+func CheckDeployCondition(apiKey, host string, artifact config.Artifact) (map[string]status.UpdateCondition, error) {
+	c := make(map[string]status.UpdateCondition)
 	j, err := json.Marshal(artifact)
 	if err != nil {
-		return cond, err
+		return c, err
 	}
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/deploy/status", host), bytes.NewBuffer(j))
 	if err != nil {
-		return cond, err
+		return c, err
 	}
 
 	req.Header.Set("Content-Type", "application/json; charset=UTF-8")
@@ -92,23 +93,35 @@ func CheckDeployCondition(apiKey, host string, artifact config.Artifact) (status
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return cond, err
+		return c, err
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return cond, err
+		return c, err
 	}
 	defer resp.Body.Close()
 
 	r := config.APIResponse{}
 	err = json.Unmarshal(body, &r)
 	if err != nil {
-		return cond, err
+		return c, err
 	}
 
 	if r.RequestStatus != "success" {
-		return cond, fmt.Errorf("error from api response: %s", r.Error)
+		return c, fmt.Errorf("error from api response: %s", r.Error)
 	}
 
-	return r.UpdateCondition, nil
+	return r.UpdateConditions, nil
+}
+
+func isSuccessful(m map[string]status.UpdateCondition) bool {
+	if len(m) == 0 {
+		return false
+	}
+	for _, v := range m {
+		if v.Status != "SUCCESS" {
+			return false
+		}
+	}
+	return true
 }
