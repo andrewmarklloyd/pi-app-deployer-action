@@ -57,11 +57,12 @@ func WaitForSuccessfulDeploy(apiKey, host string, artifact config.Artifact) erro
 			break
 		}
 
-		fmt.Println(fmt.Sprintf("Attempt number %d", count))
 		c, err := CheckDeployCondition(apiKey, host, artifact)
 		if err != nil {
 			return err
 		}
+
+		fmt.Println(fmt.Sprintf("Attempt number %d: %s", count, c))
 
 		success = isSuccessful(c)
 
