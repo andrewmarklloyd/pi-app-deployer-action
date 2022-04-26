@@ -15,7 +15,8 @@ type EnvVarConfig struct {
 }
 
 type APIResponse struct {
-	RequestStatus    string                            `json:"request"`
-	Error            string                            `json:"error"`
-	UpdateConditions map[string]status.UpdateCondition `json:"updateConditions"`
+	RequestStatus     string                            `json:"request"`
+	Error             string                            `json:"error"`
+	SuccessfulHosts   map[string]status.UpdateCondition `json:"successfulHosts"`
+	UnsuccessfulHosts map[string]status.UpdateCondition `json:"unsuccessfulHosts"`
 }
