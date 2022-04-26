@@ -108,6 +108,7 @@ func CheckDeployCondition(apiKey, host string, artifact config.Artifact) (map[st
 		return c, err
 	}
 
+	fmt.Println(string(body))
 	if r.RequestStatus != "success" {
 		return c, fmt.Errorf("error from api response: %s", r.Error)
 	}
