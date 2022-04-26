@@ -113,7 +113,7 @@ func CheckDeployCondition(apiKey, host string, artifact config.Artifact) (map[st
 		return c, fmt.Errorf("error from api response: %s", r.Error)
 	}
 
-	return r.UpdateConditions, nil
+	return c, nil
 }
 
 func isSuccessful(m map[string]status.UpdateCondition) bool {
