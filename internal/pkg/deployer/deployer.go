@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/andrewmarklloyd/pi-app-deployer-action/internal/pkg/config"
-	"github.com/andrewmarklloyd/pi-app-deployer/api/v1/status"
 )
 
 func TriggerDeploy(apiKey, host string, artifact config.Artifact) error {
@@ -51,20 +50,16 @@ func TriggerDeploy(apiKey, host string, artifact config.Artifact) error {
 func WaitForSuccessfulDeploy(apiKey, host string, artifact config.Artifact) error {
 	max := 24
 	count := 0
-	success := false
 	for {
-		if success {
-			break
-		}
-
+		fmt.Println(fmt.Sprintf("Attempt number %d", count))
 		c, err := CheckDeployCondition(apiKey, host, artifact)
 		if err != nil {
 			return err
 		}
 
-		fmt.Println(fmt.Sprintf("Attempt number %d: %s", count, c))
-
-		success = isSuccessful(c)
+		if len(c.UnsuccessfulHosts) == 0 {
+			return nil
+		}
 
 		count += 1
 		time.Sleep(5 * time.Second)
@@ -73,11 +68,10 @@ func WaitForSuccessfulDeploy(apiKey, host string, artifact config.Artifact) erro
 			return fmt.Errorf("Max number of retries exceeded. Deploy conditions from server: %s", j)
 		}
 	}
-	return nil
 }
 
-func CheckDeployCondition(apiKey, host string, artifact config.Artifact) (map[string]status.UpdateCondition, error) {
-	c := make(map[string]status.UpdateCondition)
+func CheckDeployCondition(apiKey, host string, artifact config.Artifact) (config.APIResponse, error) {
+	c := config.APIResponse{}
 	j, err := json.Marshal(artifact)
 	if err != nil {
 		return c, err
@@ -108,22 +102,9 @@ func CheckDeployCondition(apiKey, host string, artifact config.Artifact) (map[st
 		return c, err
 	}
 
-	fmt.Println(string(body))
 	if r.RequestStatus != "success" {
 		return c, fmt.Errorf("error from api response: %s", r.Error)
 	}
 
-	return c, nil
-}
-
-func isSuccessful(m map[string]status.UpdateCondition) bool {
-	if len(m) == 0 {
-		return false
-	}
-	for _, v := range m {
-		if v.Status != "SUCCESS" {
-			return false
-		}
-	}
-	return true
+	return r, nil
 }
