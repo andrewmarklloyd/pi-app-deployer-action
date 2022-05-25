@@ -64,7 +64,7 @@ func WaitForSuccessfulDeploy(apiKey, host string, artifact config.Artifact) erro
 		count += 1
 		time.Sleep(5 * time.Second)
 		if count >= max {
-			j, _ := json.Marshal(c)
+			j, _ := json.MarshalIndent(c, "", "  ")
 			return fmt.Errorf("Max number of retries exceeded. Deploy conditions from server: %s", j)
 		}
 	}
