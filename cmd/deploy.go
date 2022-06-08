@@ -54,10 +54,21 @@ func runDeploy(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	defaultArtifactName := fmt.Sprintf("app_%s", envVarConfig.GithubSHA)
+	artifactName, err := cmd.Flags().GetString("artifactName")
+	if err != nil {
+		fmt.Println("error getting artifactName flag", err)
+		os.Exit(1)
+	}
+	if artifactName == "" || artifactName == "undefined" {
+		fmt.Println(fmt.Sprintf("artifactName flag was not set but will be required in an upcoming release, setting to: '%s'", defaultArtifactName))
+		artifactName = defaultArtifactName
+	}
+
 	artifact := config.Artifact{
 		SHA:          envVarConfig.GithubSHA,
 		RepoName:     repoName,
-		Name:         fmt.Sprintf("app_%s", envVarConfig.GithubSHA),
+		Name:         artifactName,
 		ManifestName: manifestName,
 	}
 

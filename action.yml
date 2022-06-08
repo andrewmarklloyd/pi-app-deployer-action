@@ -9,6 +9,10 @@ inputs:
   host:
     description: 'Host containing protocol for the Pi App Deployer'
     required: true
+  artifactName:
+    description: 'Name of the artifact uploaded from the workflow'
+    required: false
+    default: 'undefined'
 runs:
   using: 'docker'
   image: 'Dockerfile'
@@ -20,3 +24,5 @@ runs:
     - ${{ inputs.manifestName }}
     - --host
     - ${{ inputs.host }}
+    - --artifactName
+    - ${{ inputs.artifactName }}
