@@ -72,6 +72,11 @@ func runDeploy(cmd *cobra.Command, args []string) {
 		ManifestName: manifestName,
 	}
 
+	fmt.Println("Triggering deploy")
+	fmt.Println("manifestName:", artifact.ManifestName)
+	fmt.Println("repoName:", artifact.RepoName)
+	fmt.Println("artifactName:", artifact.Name)
+	fmt.Println("artifactSHA:", artifact.SHA)
 	err = deployer.TriggerDeploy(envVarConfig.APIKey, host, artifact)
 	if err != nil {
 		fmt.Println("Error triggering deploy:", err)
