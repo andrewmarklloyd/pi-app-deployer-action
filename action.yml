@@ -11,8 +11,7 @@ inputs:
     required: true
   artifactName:
     description: 'Name of the artifact uploaded from the workflow'
-    required: false
-    default: 'undefined'
+    required: true
 runs:
   using: 'docker'
   image: 'Dockerfile'
