@@ -51,7 +51,7 @@ func WaitForSuccessfulDeploy(apiKey, host string, artifact config.Artifact) erro
 	max := 24
 	count := 0
 	for {
-		fmt.Println(fmt.Sprintf("Attempt number %d", count))
+		fmt.Println(fmt.Sprintf("Attempt number %d/%d", count, max))
 		c, err := CheckDeployCondition(apiKey, host, artifact)
 		if err != nil {
 			return err
